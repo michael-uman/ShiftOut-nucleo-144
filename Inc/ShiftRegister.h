@@ -33,6 +33,7 @@ private:
 //	void	 	digitalWrite(int pin, GPIO_PinState value);
 	void		shiftOut(uint8_t val);
 
+	bool 		bInit   = false;
 	int 		_dp 	= -1;	// data pin
 	int 		_cp 	= -1;	// clock pin
 	int 		_lp 	= -1;	// latch pin

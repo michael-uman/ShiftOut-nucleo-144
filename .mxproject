@@ -1,7 +1,7 @@
 [PreviousGenFiles]
-HeaderPath=C:/Users/muman/Workshop/ShiftOut-nucleo-144/Inc
+HeaderPath=C:/Users/muman/Workspace/ShiftOut-nucleo-144/Inc
 HeaderFiles=stm32f4xx_it.h;stm32f4xx_hal_conf.h;main.h;
-SourcePath=C:/Users/muman/Workshop/ShiftOut-nucleo-144/Src
+SourcePath=C:/Users/muman/Workspace/ShiftOut-nucleo-144/Src
 SourceFiles=stm32f4xx_it.c;stm32f4xx_hal_msp.c;main.c;
 
 [PreviousLibFiles]

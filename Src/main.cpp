@@ -23,7 +23,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "ShiftRegister.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -48,6 +48,11 @@ PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
 /* USER CODE BEGIN PV */
 int buttonState = 0;
+
+static int data_pin  = 11;
+static int clock_pin = 12;
+static int latch_pin = 8;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -70,9 +75,11 @@ static void MX_USB_OTG_FS_PCD_Init(void);
  */
 int main(void) {
 	/* USER CODE BEGIN 1 */
-	uint32_t lastTick = 0;
-	uint32_t prevLed[3] = { 0, 0, 0 };
-	uint32_t ledPeriod[3] = { 500, 1000, 1500 };
+//	uint32_t lastTick = 0;
+//	uint32_t prevLed[3] = { 0, 0, 0 };
+//	uint32_t ledPeriod[3] = { 500, 1000, 1500 };
+
+	ShiftRegister	shifter(data_pin, clock_pin, latch_pin, MSBFIRST);
 	/* USER CODE END 1 */
 
 	/* MCU Configuration--------------------------------------------------------*/
@@ -95,8 +102,9 @@ int main(void) {
 	MX_GPIO_Init();
 	MX_USART3_UART_Init();
 	MX_USB_OTG_FS_PCD_Init();
-	/* USER CODE BEGIN 2 */
 
+	/* USER CODE BEGIN 2 */
+	shifter.begin();
 	/* USER CODE END 2 */
 
 	/* Infinite loop */
@@ -105,6 +113,20 @@ int main(void) {
 		/* USER CODE END WHILE */
 
 		/* USER CODE BEGIN 3 */
+		HAL_GPIO_TogglePin(LD1_GPIO_Port, LD1_Pin);
+
+		for (int i = 0 ; i < 7 ; i++) {
+			int mask = (1L << i);
+			shifter.write(mask);
+			HAL_Delay(100);
+		}
+		for (int i = 0 ; i < 7 ; i++) {
+			int mask = (1L << (7-i));
+			shifter.write(mask);
+			HAL_Delay(100);
+		}
+
+#if 0
 		lastTick = HAL_GetTick();
 #ifdef ENABLE_UART_DEBUG
 	    static char buffer[128];
@@ -126,6 +148,7 @@ int main(void) {
 				HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
 			}
 		}
+#endif
 	}
 	/* USER CODE END 3 */
 }
@@ -141,8 +164,7 @@ void SystemClock_Config(void) {
 
 	/** Configure the main internal regulator output voltage
 	 */
-	__HAL_RCC_PWR_CLK_ENABLE()
-	;
+        __HAL_RCC_PWR_CLK_ENABLE();
 	__HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 	/** Initializes the CPU, AHB and APB busses clocks
 	 */
@@ -251,31 +273,38 @@ static void MX_GPIO_Init(void) {
 	GPIO_InitTypeDef GPIO_InitStruct = { 0 };
 
 	/* GPIO Ports Clock Enable */
-	__HAL_RCC_GPIOC_CLK_ENABLE()
-	;
-	__HAL_RCC_GPIOH_CLK_ENABLE()
-	;
-	__HAL_RCC_GPIOB_CLK_ENABLE()
-	;
-	__HAL_RCC_GPIOD_CLK_ENABLE()
-	;
-	__HAL_RCC_GPIOG_CLK_ENABLE()
-	;
-	__HAL_RCC_GPIOA_CLK_ENABLE()
-	;
+  __HAL_RCC_GPIOC_CLK_ENABLE();
+  __HAL_RCC_GPIOH_CLK_ENABLE();
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOF_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
+  __HAL_RCC_GPIOG_CLK_ENABLE();
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOA, ARDUINO_D12_Pin|ARDUINO_D11_Pin, GPIO_PIN_RESET);
 
 	/*Configure GPIO pin Output Level */
 	HAL_GPIO_WritePin(GPIOB, LD1_Pin | LD3_Pin | LD2_Pin, GPIO_PIN_RESET);
 
 	/*Configure GPIO pin Output Level */
-	HAL_GPIO_WritePin(USB_PowerSwitchOn_GPIO_Port, USB_PowerSwitchOn_Pin,
-			GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(ARDUINO_D8_GPIO_Port, ARDUINO_D8_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(USB_PowerSwitchOn_GPIO_Port, USB_PowerSwitchOn_Pin, GPIO_PIN_RESET);
 
 	/*Configure GPIO pin : USER_Btn_Pin */
 	GPIO_InitStruct.Pin = USER_Btn_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	HAL_GPIO_Init(USER_Btn_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : ARDUINO_D12_Pin ARDUINO_D11_Pin */
+  GPIO_InitStruct.Pin = ARDUINO_D12_Pin|ARDUINO_D11_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 	/*Configure GPIO pins : LD1_Pin LD3_Pin LD2_Pin */
 	GPIO_InitStruct.Pin = LD1_Pin | LD3_Pin | LD2_Pin;
@@ -285,6 +314,13 @@ static void MX_GPIO_Init(void) {
 	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 	/*Configure GPIO pin : USB_PowerSwitchOn_Pin */
+  GPIO_InitStruct.Pin = ARDUINO_D8_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(ARDUINO_D8_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : USB_PowerSwitchOn_Pin */
 	GPIO_InitStruct.Pin = USB_PowerSwitchOn_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;

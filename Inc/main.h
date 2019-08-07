@@ -62,8 +62,14 @@ void Error_Handler(void);
 #define USER_Btn_GPIO_Port GPIOC
 #define MCO_Pin GPIO_PIN_0
 #define MCO_GPIO_Port GPIOH
+#define ARDUINO_D12_Pin GPIO_PIN_6
+#define ARDUINO_D12_GPIO_Port GPIOA
+#define ARDUINO_D11_Pin GPIO_PIN_7
+#define ARDUINO_D11_GPIO_Port GPIOA
 #define LD1_Pin GPIO_PIN_0
 #define LD1_GPIO_Port GPIOB
+#define ARDUINO_D8_Pin GPIO_PIN_12
+#define ARDUINO_D8_GPIO_Port GPIOF
 #define LD3_Pin GPIO_PIN_14
 #define LD3_GPIO_Port GPIOB
 #define STLK_RX_Pin GPIO_PIN_8
