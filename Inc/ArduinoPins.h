@@ -22,6 +22,8 @@ extern "C" {
 #endif
 
 void digitalWrite(int pin, GPIO_PinState value);
+GPIO_PinState digitalRead(int pin);
+void togglePin(int pin);
 
 #ifdef __cplusplus
 }

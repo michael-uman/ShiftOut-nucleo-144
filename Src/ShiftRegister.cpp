@@ -13,16 +13,18 @@
  * Constructor
  */
 ShiftRegister::ShiftRegister() {
-
+	bInit = false;
 }
 
 /**
  * Constructor
  */
-ShiftRegister::ShiftRegister(int dataPin, int clockPin, int latchPin,
-		SHIFT_ORDER order) :
-		_dp(dataPin), _cp(clockPin), _lp(latchPin), _order(order) {
-
+ShiftRegister::ShiftRegister(int dataPin, int clockPin, int latchPin, SHIFT_ORDER order)
+: _dp(dataPin),
+  _cp(clockPin),
+  _lp(latchPin),
+  _order(order)
+{
 }
 
 /**
@@ -46,6 +48,11 @@ bool ShiftRegister::begin(int dataPin, int clockPin, int latchPin, int order) {
 		_order = (SHIFT_ORDER) order;
 	}
 
+	bInit = true;
+
+	// Initialize to all LEDs off...
+	write(0);
+
 	return true;
 }
 
@@ -57,6 +64,11 @@ bool ShiftRegister::begin(int dataPin, int clockPin, int latchPin, int order) {
 void ShiftRegister::shiftOut(uint8_t val) {
 	uint8_t i;
 
+	if (!bInit) {
+		// Device not initialized
+		return;
+	}
+
 	for (i = 0; i < 8; i++) {
 		if (_order == LSBFIRST)
 			digitalWrite(_dp, (val & (1 << i)) ? GPIO_PIN_SET : GPIO_PIN_RESET);
@@ -64,6 +76,7 @@ void ShiftRegister::shiftOut(uint8_t val) {
 			digitalWrite(_dp, (val & (1 << (7 - i))) ? GPIO_PIN_SET : GPIO_PIN_RESET);
 
 		digitalWrite(_cp, GPIO_PIN_SET);
+		HAL_Delay(2);
 		digitalWrite(_cp, GPIO_PIN_RESET);
 	}
 }
@@ -72,6 +85,10 @@ void ShiftRegister::shiftOut(uint8_t val) {
  *	Writes the value to the shift-register, ultimately displaying on the LED's
  */
 void ShiftRegister::write(uint8_t value) {
+	if (!bInit) {
+		// Device not initialized
+		return;
+	}
 	digitalWrite(_lp, GPIO_PIN_RESET);
 	shiftOut(value);
 	digitalWrite(_lp, GPIO_PIN_SET);
