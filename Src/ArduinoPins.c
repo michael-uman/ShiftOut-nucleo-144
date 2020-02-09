@@ -1,8 +1,8 @@
 /*
  * ArduinoPins.c
  *
- *  Created on: Aug 6, 2019
- *      Author: muman
+ * This module converts Arduino style D## pin id's to STM32 GPIO Port & Pin
+ *
  */
 
 
@@ -11,7 +11,7 @@
 /**
  * This structure is used to translate pin # to GPIO Port and Pin on STM32
  */
-#if 0
+#ifdef STM32WB55xx
 struct digitalPinEntry arduinoPinTable[] = {
 		{ GPIOA, GPIO_PIN_3 },							// D0
 		{ GPIOA, GPIO_PIN_2 },							// D1
